@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+body { margin: 0; padding: 0; }
+
+/* ── Modal portal root ───────────────────────────────────────
+   The #modal-root div is appended to <body> by CardModal.
+   It must sit above everything, with its OWN stacking context
+   that is NOT inside any DnD transform parent.            */
+#modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none; /* pass-through when empty */
+}
+#modal-root:not(:empty) {
+  pointer-events: auto;
+}
+
+/* ── Board scrollbar ────────────────────────────────────────*/
+.board-scroll::-webkit-scrollbar { height: 8px; }
+.board-scroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+}
+.board-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.25);
+  border-radius: 4px;
+}
+.board-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+/* ── List cards scrollbar ───────────────────────────────────*/
+.list-cards::-webkit-scrollbar { width: 4px; }
+.list-cards::-webkit-scrollbar-track { background: transparent; }
+.list-cards::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+}
+
+/* ── Modal entrance animation ───────────────────────────────*/
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.modal-animate {
+  animation: modalIn 0.18s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+/* ── Card hover lift ────────────────────────────────────────*/
+.trello-card {
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.trello-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4) !important;
+  border-color: rgba(255,255,255,0.25) !important;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

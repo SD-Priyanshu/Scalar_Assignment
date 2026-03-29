@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id        String   @id @default(cuid())
+  title     String
+  background String? @default("#0079bf")
+  lists     List[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model List {
+  id        String   @id @default(cuid())
+  title     String
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards     Card[]
+  order     Int
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  listId      String
+  list        List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  labels      CardLabel[]
+  dueDate     DateTime?
+  checklist   ChecklistItem[]
+  members     Json // array of names
+  attachments Json // array of urls
+  cover       String?
+  comments    Comment[]
+  order       Int
+  completed   Boolean  @default(false)
+  archived    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Label {
+  id     String @id @default(cuid())
+  name   String
+  color  String
+  cards  CardLabel[]
+}
+
+model CardLabel {
+  id      String @id @default(cuid())
+  cardId  String
+  card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  labelId String
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, labelId])
+}
+
+model ChecklistItem {
+  id     String @id @default(cuid())
+  text   String
+  done   Boolean @default(false)
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id     String @id @default(cuid())
+  text   String
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

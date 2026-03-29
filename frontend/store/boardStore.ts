@@ -60,8 +60,14 @@ interface BoardState {
   clearFilters: () => void;
 }
 
-const API_BASE = `${process.env.NEXT_PUBLIC_API_URL}/api`;
-console.log('API_BASE:', API_BASE); // Debug log
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api`
+  : 'https://scalarassignment-production.up.railway.app/api';
+
+// For local development in repo: set frontend/.env NEXT_PUBLIC_API_URL=http://localhost:3001
+if (!process.env.NEXT_PUBLIC_API_URL) {
+  console.warn('[boardStore] NEXT_PUBLIC_API_URL is undefined; using fallback:', API_BASE);
+}
 
 async function apiFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, {

@@ -61,6 +61,7 @@ interface BoardState {
 }
 
 const API_BASE = `${process.env.NEXT_PUBLIC_API_URL}/api`;
+console.log('API_BASE:', API_BASE); // Debug log
 
 async function apiFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, {
@@ -151,16 +152,22 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   setCurrentBoard: (id) => set({ currentBoardId: id }),
 
   addBoard: async (title) => {
+    console.log('addBoard called with title:', title);
+    console.log('API_BASE:', API_BASE);
     try {
       const board = await apiFetch(`${API_BASE}/boards`, {
         method: 'POST',
         body: JSON.stringify({ title }),
       });
+      console.log('Board created:', board);
       set((s) => ({
         boards: [...s.boards, { ...board, lists: board.lists ?? [] }],
         currentBoardId: board.id,
       }));
-    } catch (err) { console.error('addBoard:', err); }
+    } catch (err) {
+      console.error('addBoard error:', err);
+      throw err; // Re-throw so UI can handle it
+    }
   },
 
   updateBoard: async (boardId, updates) => {

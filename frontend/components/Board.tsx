@@ -16,6 +16,7 @@ interface BoardProps {
   board: BoardType;
 }
 
+// Check if a card should be visible by matching search text, labels, members, and due date filters.
 function matchesFilters(
   card: CardType,
   searchQuery: string,
@@ -69,6 +70,7 @@ function matchesFilters(
   return true;
 }
 
+// Board component: renders the board with drag-and-drop lists, cards, and filters.
 export default function Board({ board }: BoardProps) {
   const {
     moveList, moveCard, addList, updateCard, unarchiveList, unarchiveCard,
@@ -83,18 +85,22 @@ export default function Board({ board }: BoardProps) {
   // Track which list a dragging card came from (for correct DnD)
   const activeCardListId = useRef<string | null>(null);
 
+  // Create drag sensors so the board can detect pointer drags for cards and lists.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
+  // Detect whether any search or filter is currently active.
   const hasFilters =
     !!searchQuery.trim() ||
     filterLabels.length > 0 ||
     filterMembers.length > 0 ||
     filterDueDate !== 'all';
 
+  // Keep a separate list of archived lists that can be restored later.
   const archivedLists = board.lists.filter((list) => list.archived);
 
+  // Build the visible lists, applying filters and hiding archived cards.
   const filteredLists = board.lists
     .filter((list) => !list.archived)
     .map((list) => ({
@@ -106,6 +112,7 @@ export default function Board({ board }: BoardProps) {
         : list.cards.filter((c) => !c.archived),
     }));
 
+  // Collect archived card objects so they can be shown in a restore section.
   const archivedCards = board.lists
     .flatMap((list) => list.cards)
     .filter((c) => c.archived);
@@ -113,6 +120,7 @@ export default function Board({ board }: BoardProps) {
 
   // ── Drag handlers ────────────────────────────────────────────
 
+  // Start drag event: remember which card or list is being dragged.
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const type = active.data.current?.type;
@@ -131,6 +139,7 @@ export default function Board({ board }: BoardProps) {
     }
   };
 
+  // Handle dragging a card over another card or list to update its target position.
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -171,6 +180,7 @@ export default function Board({ board }: BoardProps) {
     active.data.current!.listId = toListId;
   };
 
+  // Finalize drag: drop the card or list into its new position after dragging ends.
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -189,6 +199,7 @@ export default function Board({ board }: BoardProps) {
     }
   };
 
+  // Create a new list on this board and reset the input state.
   const handleAddList = () => {
     if (!newListTitle.trim()) return;
     addList(board.id, newListTitle.trim());

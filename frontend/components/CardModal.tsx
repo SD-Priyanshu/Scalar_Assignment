@@ -35,9 +35,16 @@ const CARD_COVERS = [
   '#e774bb', '#8590a2',
 ];
 
-type SidePanel = 'labels' | 'members' | 'dates' | 'checklist' | 'cover' | 'attachment' | null;
+type SidePanel = 'labels' | 'members' | 'dates' | 'checklist' | 'cover' | 'backgroundImage' | 'attachment' | null;
 
-// Hook: close a floating panel when clicking outside its ref
+const BACKGROUND_IMAGES = [
+  '/images/img1.avif',
+  '/images/img2.avif',
+  '/images/img3.avif',
+  '/images/img4.avif',
+];
+
+// Custom hook: closes a popover panel when the user clicks outside it.
 function useOutsideClick(ref: React.RefObject<HTMLDivElement | null>, active: boolean, onClose: () => void) {
   useEffect(() => {
     if (!active) return;
@@ -53,6 +60,7 @@ function useOutsideClick(ref: React.RefObject<HTMLDivElement | null>, active: bo
   }, [active, ref, onClose]);
 }
 
+// CardModal component: shows the full card editor with labels, checklist, members, and attachments.
 export default function CardModal({ card, listId, isOpen, onClose }: CardModalProps) {
   const {
     updateCard, deleteCard,
@@ -64,6 +72,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
     archiveCard, unarchiveCard,
   } = useBoardStore();
 
+  // Local UI state for editing the card modal and its floating panels.
   const [editingTitle, setEditingTitle]       = useState(false);
   const [title, setTitle]                     = useState(card.title);
   const [editingDesc, setEditingDesc]         = useState(false);
@@ -85,28 +94,34 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
   const [attachUrl, setAttachUrl]             = useState('');
   const [attachDisplay, setAttachDisplay]     = useState('');
 
-  // Each panel has its own ref for reliable outside-click detection
+  // Refs for each floating panel so clicks outside can close them.
   const labelPanelRef      = useRef<HTMLDivElement>(null);
   const memberPanelRef     = useRef<HTMLDivElement>(null);
   const datePanelRef       = useRef<HTMLDivElement>(null);
   const checklistPanelRef  = useRef<HTMLDivElement>(null);
   const coverPanelRef      = useRef<HTMLDivElement>(null);
+  const backgroundImagePanelRef = useRef<HTMLDivElement>(null);
   const attachPanelRef     = useRef<HTMLDivElement>(null);
   const cardMenuRef        = useRef<HTMLDivElement>(null);
   const overlayRef         = useRef<HTMLDivElement>(null);
 
+  // Close the current side panel if open.
   const closePanel = () => setActivePanel(null);
 
+  // Close the active floating panel when clicking outside of it.
   useOutsideClick(labelPanelRef,     activePanel === 'labels',     closePanel);
   useOutsideClick(memberPanelRef,    activePanel === 'members',    closePanel);
   useOutsideClick(datePanelRef,      activePanel === 'dates',      closePanel);
   useOutsideClick(checklistPanelRef, activePanel === 'checklist',  closePanel);
   useOutsideClick(coverPanelRef,     activePanel === 'cover',      closePanel);
+  useOutsideClick(backgroundImagePanelRef, activePanel === 'backgroundImage', closePanel);
   useOutsideClick(attachPanelRef,    activePanel === 'attachment', closePanel);
   useOutsideClick(cardMenuRef,       showCardMenu,                 () => setShowCardMenu(false));
 
+  // Mark the modal as mounted so it can safely use document APIs in the browser.
   useEffect(() => setMounted(true), []);
 
+  // Reset editable fields whenever a different card is shown.
   useEffect(() => {
     setTitle(card.title);
     setDescription(card.description || '');
@@ -115,11 +130,13 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
     setCommentText('');
   }, [card.id]);
 
+  // Prevent page scrolling while the modal is open.
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  // Close the modal when the user presses Escape.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
@@ -130,9 +147,11 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
 
   // ── Helpers ───────────────────────────────────────────────
 
+  // Toggle whether a side panel is visible or hidden.
   const togglePanel = (p: SidePanel) =>
     setActivePanel((prev) => (prev === p ? null : p));
 
+  // Save the card title if it changed, or restore the old title if empty.
   const handleTitleSave = () => {
     const t = title.trim();
     if (t && t !== card.title) updateCard(card.id, { title: t });
@@ -140,28 +159,33 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
     setEditingTitle(false);
   };
 
+  // Save the card description and close description editing mode.
   const handleDescSave = () => {
     updateCard(card.id, { description });
     setEditingDesc(false);
   };
 
+  // Add a new checklist item to this card.
   const handleAddCheckItem = () => {
     if (!newCheckItem.trim()) return;
     addChecklistItem(card.id, newCheckItem.trim());
     setNewCheckItem('');
   };
 
+  // Add a member name to this card.
   const handleAddMember = () => {
     if (!newMember.trim()) return;
     addMemberToCard(card.id, newMember.trim());
     setNewMember('');
   };
 
+  // Save due date changes for the card and close the date panel.
   const handleDueDateSave = () => {
     updateCard(card.id, { dueDate: dueDate ? new Date(dueDate).toISOString() : undefined });
     setActivePanel(null);
   };
 
+  // Create a new label and add it to the card.
   const handleCreateLabel = async () => {
     // Label name is now optional
     const label = await createLabel(newLabelName.trim() || `Label ${Date.now()}`, newLabelColor);
@@ -172,6 +196,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
     }
   };
 
+  // Add a new comment to this card.
   const handleAddComment = () => {
     if (!commentText.trim()) return;
     addComment(card.id, commentText.trim());
@@ -179,6 +204,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
     setCommentFocused(false);
   };
 
+  // Attach a link to this card and close the attach panel.
   const handleAddAttachment = () => {
     if (!attachUrl.trim()) return;
     addAttachment(card.id, attachUrl.trim(), attachDisplay.trim() || attachUrl.trim());
@@ -187,7 +213,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
     setActivePanel(null);
   };
 
-  // Deduplicate
+  // Deduplicate labels for use in the label selection UI.
   const uniqueLabels = availableLabels.filter(
     (l, i, arr) => arr.findIndex((x) => x.id === l.id) === i
   );
@@ -196,6 +222,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
   );
   const cardLabelIds = cardLabels.map((cl) => cl.label.id);
 
+  // Compute checklist progress and due date state for display.
   const completedItems = card.checklist.filter((i) => i.done).length;
   const totalItems     = card.checklist.length;
   const progressPct   = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
@@ -204,6 +231,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
   const dueDateObj = card.dueDate ? new Date(card.dueDate) : null;
   const isOverdue  = dueDateObj && dueDateObj < now;
 
+  // Normalize attachments and comments arrays so rendering is safe.
   const attachments: any[] = Array.isArray(card.attachments) ? card.attachments : [];
   const comments: any[]    = Array.isArray(card.comments) ? card.comments : [];
 
@@ -590,6 +618,41 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
                       className="w-full text-xs text-[#f87168] hover:bg-[#f87168]/10 py-1.5 rounded-lg transition-colors"
                     >
                       Remove cover
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Background Image button + panel */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => togglePanel('backgroundImage')} className={`${btnBase} ${activePanel === 'backgroundImage' ? btnOn : btnOff}`}>
+                🖼️ Background
+              </button>
+              {activePanel === 'backgroundImage' && (
+                <div ref={backgroundImagePanelRef} style={{ ...floatPanel, minWidth: '300px' }}>
+                  <p className="text-xs font-semibold text-gray-400 mb-3">Card background</p>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {BACKGROUND_IMAGES.map((imgSrc) => (
+                      <button
+                        key={imgSrc}
+                        onClick={() => { updateCard(card.id, { backgroundImage: imgSrc }); setActivePanel(null); }}
+                        className={`relative h-24 rounded-lg overflow-hidden transition-transform hover:scale-105 ${card.backgroundImage === imgSrc ? 'ring-2 ring-[#579dff]' : 'border border-white/10'}`}
+                      >
+                        <img
+                          src={imgSrc}
+                          alt="Background option"
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {card.backgroundImage && (
+                    <button
+                      onClick={() => { updateCard(card.id, { backgroundImage: undefined }); setActivePanel(null); }}
+                      className="w-full text-xs text-[#f87168] hover:bg-[#f87168]/10 py-1.5 rounded-lg transition-colors"
+                    >
+                      Remove background
                     </button>
                   )}
                 </div>

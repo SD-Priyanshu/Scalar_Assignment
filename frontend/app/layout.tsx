@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description: 'A Kanban-style project management app',
 };
 
+// Root layout component: wraps all pages with HTML and body structure.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

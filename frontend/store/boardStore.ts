@@ -49,7 +49,7 @@ interface BoardState {
 
   addComment: (cardId: string, text: string) => Promise<void>;
   addAttachment: (cardId: string, url: string, displayText?: string) => void;
-  removeAttachment: (cardId: string, url: string) => void;
+  removeAttachment: (cardId: string, attachmentId: string) => void;    //change here  
 
   setSearchQuery: (query: string) => void;
   setFilters: (filters: Partial<{
@@ -62,13 +62,14 @@ interface BoardState {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
   ? `${process.env.NEXT_PUBLIC_API_URL}/api`
-  : 'https://scalarassignment-production.up.railway.app/api';
-
+  : 'http://localhost:3001/api';
+  
 // For local development in repo: set frontend/.env NEXT_PUBLIC_API_URL=http://localhost:3001
 if (!process.env.NEXT_PUBLIC_API_URL) {
   console.warn('[boardStore] NEXT_PUBLIC_API_URL is undefined; using fallback:', API_BASE);
 }
 
+// Fetch helper: calls the API and parses JSON, throwing an error for bad responses.
 async function apiFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, {
     ...options,
@@ -82,11 +83,12 @@ async function apiFetch(url: string, options?: RequestInit) {
   return json?.data !== undefined ? json.data : json;
 }
 
+// Keep only one item per unique id in an array.
 function dedupeById<T extends { id: string }>(arr: T[]): T[] {
   return arr.filter((item, idx, self) => self.findIndex((x) => x.id === item.id) === idx);
 }
 
-// Deduplicate card labels (prevent same label appearing twice on a card)
+// Deduplicate card labels (prevent the same label from showing twice on a card)
 function dedupeCardLabels(labels: any[]): any[] {
   if (!Array.isArray(labels)) return [];
   const seen = new Set<string>();
@@ -111,12 +113,13 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Boards ──────────────────────────────────────────────────
 
+  // Load all boards from the backend and set the current board.
   fetchBoards: async () => {
     set({ loading: true, error: null });
     try {
       const boards = await apiFetch(`${API_BASE}/boards`);
       const arr: Board[] = Array.isArray(boards) ? boards : [];
-      // Sanitize all card labels on load
+      // Sanitize board data from the API so local state always has arrays and deduped labels.
       const sanitized = arr.map((b) => ({
         ...b,
         archived: b.archived ?? false,
@@ -145,6 +148,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Load all available labels from the backend.
   fetchLabels: async () => {
     try {
       const labels = await apiFetch(`${API_BASE}/labels`);
@@ -155,8 +159,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Switch the active board by id.
   setCurrentBoard: (id) => set({ currentBoardId: id }),
 
+  // Create a new board and select it.
   addBoard: async (title) => {
     console.log('addBoard called with title:', title);
     console.log('API_BASE:', API_BASE);
@@ -176,6 +182,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Update the board title or background color.
   updateBoard: async (boardId, updates) => {
     try {
       const board = await apiFetch(`${API_BASE}/boards/${boardId}`, {
@@ -186,6 +193,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('updateBoard:', err); }
   },
 
+  // Delete a board and switch to another board if needed.
   deleteBoard: async (boardId) => {
     try {
       await apiFetch(`${API_BASE}/boards/${boardId}`, { method: 'DELETE' });
@@ -196,6 +204,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('deleteBoard:', err); }
   },
 
+  // Archive a board locally so it is hidden from the main view.
   archiveBoard: async (boardId) => {
     set((s) => ({
       boards: s.boards.map((b) =>
@@ -207,6 +216,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }));
   },
 
+  // Unarchive a board so it becomes visible again.
   unarchiveBoard: async (boardId) => {
     set((s) => ({
       boards: s.boards.map((b) =>
@@ -215,6 +225,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }));
   },
 
+  // Archive a list within a board.
   archiveList: async (listId) => {
     try {
       await apiFetch(`${API_BASE}/lists/${listId}/archive`, { method: 'PATCH' });
@@ -231,6 +242,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Restore an archived list so it is visible again.
   unarchiveList: async (listId) => {
     set((s) => ({
       boards: s.boards.map((b) => ({
@@ -242,6 +254,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }));
   },
 
+  // Archive a card locally and tell the backend to archive it.
   archiveCard: async (cardId) => {
     set((s) => ({
       boards: s.boards.map((b) => ({
@@ -262,6 +275,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Unarchive a card so it reappears in its list.
   unarchiveCard: async (cardId) => {
     set((s) => ({
       boards: s.boards.map((b) => ({
@@ -282,6 +296,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Delete a label and remove it from all cards.
   deleteLabel: async (labelId) => {
     try {
       await apiFetch(`${API_BASE}/labels/${labelId}`, { method: 'DELETE' });
@@ -305,6 +320,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Lists ────────────────────────────────────────────────────
 
+  // Add a new list to a board.
   addList: async (boardId, title) => {
     try {
       const list = await apiFetch(`${API_BASE}/boards/${boardId}/lists`, {
@@ -321,6 +337,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('addList:', err); }
   },
 
+  // Rename a list.
   updateList: async (listId, title) => {
     try {
       await apiFetch(`${API_BASE}/lists/${listId}`, {
@@ -336,6 +353,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('updateList:', err); }
   },
 
+  // Delete a list from its board.
   deleteList: async (listId) => {
     try {
       await apiFetch(`${API_BASE}/lists/${listId}`, { method: 'DELETE' });
@@ -348,6 +366,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('deleteList:', err); }
   },
 
+  // Move a list to a new position inside its board.
   moveList: async (boardId, listId, newIndex) => {
     set((s) => {
       const board = s.boards.find((b) => b.id === boardId);
@@ -382,12 +401,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Cards ────────────────────────────────────────────────────
 
+  // Create a new card inside a specific list.
   addCard: async (boardId, listId, title) => {
     try {
       const card = await apiFetch(`${API_BASE}/lists/${listId}/cards`, {
         method: 'POST',
         body: JSON.stringify({ title }),
       });
+      // Normalize the new card data before adding it to local state.
       const safeCard = {
         ...card,
         labels: dedupeCardLabels(card.labels ?? []),
@@ -409,6 +430,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('addCard:', err); }
   },
 
+  // Update card fields such as title, description, due date, or labels.
   updateCard: async (cardId, updates) => {
     set((s) => ({
       boards: s.boards.map((b) => ({
@@ -430,6 +452,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Remove a card from its list.
   deleteCard: async (cardId) => {
     try {
       await apiFetch(`${API_BASE}/cards/${cardId}`, { method: 'DELETE' });
@@ -445,12 +468,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('deleteCard:', err); }
   },
 
+  // Move a card from one list to another or reorder it inside the same list.
   moveCard: async (boardId, cardId, fromListId, toListId, newOrder) => {
     set((s) => {
       const board = s.boards.find((b) => b.id === boardId);
       if (!board) return s;
       const card = board.lists.flatMap((l) => l.cards).find((c) => c.id === cardId);
       if (!card) return s;
+      // Update local board state by removing the card from its old list and inserting it into the target list.
       const newBoards = s.boards.map((b) => {
         if (b.id !== boardId) return b;
         const newLists = b.lists.map((l) => {
@@ -480,6 +505,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Labels ───────────────────────────────────────────────────
 
+  // Add a label to a card if it is not already assigned.
   addLabelToCard: async (cardId, labelId) => {
     // Guard: don't add if card already has this label
     const state = get();
@@ -510,6 +536,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('addLabelToCard:', err); }
   },
 
+  // Remove a label from a card.
   removeLabelFromCard: async (cardId, labelId) => {
     try {
       const updatedCard = await apiFetch(`${API_BASE}/cards/${cardId}/labels/${labelId}`, {
@@ -531,6 +558,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('removeLabelFromCard:', err); }
   },
 
+  // Create a new global label option.
   createLabel: async (name, color) => {
     try {
       const label = await apiFetch(`${API_BASE}/labels`, {
@@ -549,6 +577,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Checklist ────────────────────────────────────────────────
 
+  // Add a new item to a card's checklist.
   addChecklistItem: async (cardId, text) => {
     try {
       const item = await apiFetch(`${API_BASE}/cards/${cardId}/checklist`, {
@@ -569,6 +598,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('addChecklistItem:', err); }
   },
 
+  // Mark a checklist item as done or not done.
   updateChecklistItem: async (itemId, done) => {
     // Optimistic
     set((s) => ({
@@ -593,6 +623,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('updateChecklistItem:', err); }
   },
 
+  // Remove a checklist item from a card.
   deleteChecklistItem: async (itemId) => {
     // Optimistic remove
     set((s) => ({
@@ -617,6 +648,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Members ──────────────────────────────────────────────────
 
+  // Add a member name to a card.
   addMemberToCard: async (cardId, memberName) => {
     try {
       const updatedCard = await apiFetch(`${API_BASE}/cards/${cardId}/members`, {
@@ -637,6 +669,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (err) { console.error('addMemberToCard:', err); }
   },
 
+  // Remove a member from a card.
   removeMemberFromCard: async (cardId, memberName) => {
     try {
       const updatedCard = await apiFetch(
@@ -659,6 +692,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Comments ─────────────────────────────────────────────────
 
+  // Add a comment to a card, using optimistic UI updates.
   addComment: async (cardId, text) => {
     const tempId = `temp-${Date.now()}`;
     const tempComment = {
@@ -713,6 +747,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Attachments (local only — no dedicated backend endpoint) ─
 
+  // Add a local attachment to a card and persist it with card updates.
   addAttachment: (cardId, url, displayText) => {
     const attachment = {
       id: `att-${Date.now()}`,
@@ -746,6 +781,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  // Remove an attachment from a card.
   removeAttachment: (cardId, attachmentId) => {
     set((s) => ({
       boards: s.boards.map((b) => ({
@@ -779,8 +815,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // ── Search & Filter ──────────────────────────────────────────
 
+  // Set the search query used to filter cards by text.
   setSearchQuery: (query) => set({ searchQuery: query }),
 
+  // Update one or more filter settings.
   setFilters: (filters) =>
     set((s) => ({
       filterLabels:  filters.labels   ?? s.filterLabels,
@@ -788,6 +826,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       filterDueDate: filters.dueDate  ?? s.filterDueDate,
     })),
 
+  // Clear all active search and filter settings.
   clearFilters: () =>
     set({ searchQuery: '', filterLabels: [], filterMembers: [], filterDueDate: 'all' }),
 }));

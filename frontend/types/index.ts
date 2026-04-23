@@ -33,6 +33,7 @@ export interface Card {
   members: string[];
   attachments: (string | Attachment)[];
   cover?: string;
+  backgroundImage?: string;
   comments: Comment[];
   order: number;
   archived?: boolean;

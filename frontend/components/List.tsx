@@ -13,7 +13,9 @@ interface ListProps {
   boardId: string;
 }
 
+// List component: displays a list of cards with add, rename, archive, and delete controls.
 export default function List({ list, boardId }: ListProps) {
+  // Hooks for list actions and local UI state.
   const { addCard, deleteList, updateList, archiveList } = useBoardStore();
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
@@ -22,7 +24,7 @@ export default function List({ list, boardId }: ListProps) {
   const [titleValue, setTitleValue] = useState(list.title);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close menu on outside click
+  // Close the action menu when the user clicks outside of it.
   useEffect(() => {
     if (!showMenu) return;
     const handler = (e: MouseEvent) => {
@@ -46,6 +48,7 @@ export default function List({ list, boardId }: ListProps) {
     transition: isDragging ? undefined : transition,
   };
 
+  // Add a new card to this list when user submits the card title.
   const handleAddCard = () => {
     if (!newCardTitle.trim()) return;
     addCard(boardId, list.id, newCardTitle.trim());
@@ -53,6 +56,7 @@ export default function List({ list, boardId }: ListProps) {
     setShowAddCard(false);
   };
 
+  // Save the list title after inline editing or revert if blank.
   const handleTitleSave = () => {
     const trimmed = titleValue.trim();
     if (trimmed && trimmed !== list.title) updateList(list.id, trimmed);

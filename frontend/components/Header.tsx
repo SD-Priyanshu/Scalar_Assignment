@@ -14,6 +14,7 @@ const BOARD_BACKGROUNDS = [
   '#89609e', '#cd5a91', '#4bbf6b', '#00aecc', '#838c91',
 ];
 
+// Header component: manages the top toolbar with search, filters, and board creation.
 export default function Header({ currentBoard }: HeaderProps) {
   const {
     updateBoard, deleteBoard,
@@ -24,6 +25,7 @@ export default function Header({ currentBoard }: HeaderProps) {
     addBoard,
   } = useBoardStore();
 
+  // Local UI state for the header bar and create-board dropdown.
   const [showCreate, setShowCreate]       = useState(false);
   const [showFilter, setShowFilter]       = useState(false);
   const [newBoardTitle, setNewBoardTitle] = useState('');
@@ -37,6 +39,7 @@ export default function Header({ currentBoard }: HeaderProps) {
 
   useEffect(() => { setMounted(true); }, []);
 
+  // Detect whether any filter is currently active to change the filter button state.
   const hasActiveFilters =
     !!searchQuery.trim() ||
     filterLabels.length > 0 ||
@@ -61,6 +64,7 @@ export default function Header({ currentBoard }: HeaderProps) {
     return () => document.removeEventListener('mousedown', handler, true);
   }, []);
 
+  // Toggle the create-board dropdown and compute its screen position.
   const handleToggleCreate = () => {
     if (!showCreate && createBtnRef.current) {
       const r = createBtnRef.current.getBoundingClientRect();
@@ -69,6 +73,7 @@ export default function Header({ currentBoard }: HeaderProps) {
     setShowCreate(v => !v);
   };
 
+  // Create a new board with the entered title and reset the creation form.
   const handleCreateBoard = () => {
     if (!newBoardTitle.trim()) return;
     addBoard(newBoardTitle.trim());
@@ -77,9 +82,11 @@ export default function Header({ currentBoard }: HeaderProps) {
     setShowCreate(false);
   };
 
+  // Flatten all board card members into a unique list for the filter UI.
   const allMembers = Array.from(
     new Set((currentBoard?.lists ?? []).flatMap(l => l.cards.flatMap(c => c.members)))
   );
+  // Remove duplicate labels so the filter UI only shows each label once.
   const uniqueLabels = availableLabels.filter(
     (l, i, arr) => arr.findIndex(x => x.id === l.id) === i
   );

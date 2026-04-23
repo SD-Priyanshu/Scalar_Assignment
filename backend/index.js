@@ -1,27 +1,19 @@
-// Server entry point
-
 require('dotenv').config();
 const app = require('./src/app');
 const prisma = require('./src/utils/db');
 
 const PORT = process.env.PORT || 3001;
 
-const server = app.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════╗
-║  🚀 Kanban Board API Server Running   ║
-║  📍 http://localhost:${PORT}               ║
-║  🗄️  Database: Connected               ║
-╚════════════════════════════════════════╝
-  `);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('\n⏹️  Shutting down gracefully...');
+  console.log('\nShutting down gracefully...');
   server.close(async () => {
     await prisma.$disconnect();
-    console.log('✓ Database connection closed');
+    console.log('Database connection closed');
     process.exit(0);
   });
 });

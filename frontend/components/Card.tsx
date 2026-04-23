@@ -11,9 +11,12 @@ interface CardProps {
   index: number;
 }
 
+// Card component: shows a draggable card preview and opens a modal for editing.
 export default function Card({ card, listId, index }: CardProps) {
+  // Local state for whether the card detail modal is open.
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Make the card draggable and provide drag event data.
   const {
     attributes, listeners, setNodeRef, transform, transition, isDragging,
   } = useSortable({
@@ -21,20 +24,24 @@ export default function Card({ card, listId, index }: CardProps) {
     data: { type: 'card', listId, index },
   });
 
+  // Apply drag style transforms unless the card is being dragged.
   const style = {
     transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition: isDragging ? undefined : transition,
   };
 
+  // Compute checklist summary values for badges and state.
   const completedItems = card.checklist.filter((i) => i.done).length;
   const totalItems = card.checklist.length;
   const allDone = totalItems > 0 && completedItems === totalItems;
 
+  // Derive due date status used for badge styling.
   const now = new Date();
   const dueDate = card.dueDate ? new Date(card.dueDate) : null;
   const isOverdue = dueDate && dueDate < now;
   const isDueSoon = dueDate && !isOverdue && (dueDate.getTime() - now.getTime()) < 24 * 60 * 60 * 1000;
 
+  // Decide if the card should show additional small status badges.
   const hasBadges = totalItems > 0 || card.dueDate || (card.description) || (card.comments?.length > 0) || card.members.length > 0;
 
   return (
@@ -50,8 +57,22 @@ export default function Card({ card, listId, index }: CardProps) {
           backgroundColor: '#22272b',
           boxShadow: '0 1px 0 rgba(9,30,66,0.25)',
           border: '1px solid rgba(255,255,255,0.08)',
+          backgroundImage: card.backgroundImage ? `url(${card.backgroundImage})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       >
+        {/* Background overlay for readability */}
+        {card.backgroundImage && (
+          <div
+            className="absolute inset-0 rounded-xl"
+            style={{
+              backgroundColor: 'rgba(34, 39, 43, 0.7)',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+        
         {/* Cover strip */}
         {card.cover && (
           <div
@@ -60,7 +81,7 @@ export default function Card({ card, listId, index }: CardProps) {
           />
         )}
 
-        <div className={`px-3 py-2.5 ${card.cover ? 'pt-2' : ''}`}>
+        <div className={`px-3 py-2.5 ${card.cover ? 'pt-2' : ''} relative z-10`}>
           {/* Label strips — Trello style: short colored pills */}
           {card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">

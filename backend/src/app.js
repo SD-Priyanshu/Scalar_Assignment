@@ -12,8 +12,25 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // Middleware
-app.use(cors());
 app.use(express.json());
+
+const allowedOrigins = [
+  'http://localhost:3000', // Next.js local
+  'http://localhost:5173', // Vite (just in case)
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 // Request logging middleware
 app.use((req, res, next) => {

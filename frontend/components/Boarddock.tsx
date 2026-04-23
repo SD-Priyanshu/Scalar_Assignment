@@ -1,14 +1,15 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useBoardStore } from '../store/boardStore';
-import { LayoutDashboard, Calendar, Trello, ArrowLeftRight, X, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Calendar, ArrowLeftRight, X, ChevronUp, Trello } from 'lucide-react';
 
+// Bottom dock component: shows board navigation and the board switcher panel.
 export default function BoardDock() {
   const { boards, currentBoardId, setCurrentBoard } = useBoardStore();
   const [showSwitcher, setShowSwitcher] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
 
-  // Close switcher on outside click
+  // Close the board switcher dropdown when the user clicks outside it.
   useEffect(() => {
     if (!showSwitcher) return;
     const handler = (e: MouseEvent) => {
@@ -20,6 +21,7 @@ export default function BoardDock() {
     return () => document.removeEventListener('mousedown', handler, true);
   }, [showSwitcher]);
 
+  // Find the selected board so the dock can display its title.
   const currentBoard = boards.find((b) => b.id === currentBoardId);
 
   return (
@@ -98,7 +100,7 @@ export default function BoardDock() {
 
         {/* Board tab — active state */}
         <DockTab
-          icon={<Trello size={16} />}
+          icon={< Trello size={16} />}
           label="Board"
           active
           activeLabel={currentBoard?.title}
@@ -132,6 +134,7 @@ interface DockTabProps {
   activeLabel?: string;
 }
 
+// Dock tab component: renders one button inside the bottom dock.
 function DockTab({ icon, label, active, activeLabel }: DockTabProps) {
   return (
     <div

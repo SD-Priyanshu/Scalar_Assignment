@@ -5,6 +5,7 @@ import Board from '../components/Board';
 import Header from '../components/Header';
 import BoardDock from '../components/Boarddock';
 
+// Map board background colors to nicer gradient styles used in the page background.
 const GRADIENT_MAP: Record<string, string> = {
   '#0079bf': 'linear-gradient(135deg, #1a6496 0%, #0e4d72 40%, #083a57 100%)',
   '#d29034': 'linear-gradient(135deg, #b8791f 0%, #8a5a14 100%)',
@@ -19,6 +20,7 @@ const GRADIENT_MAP: Record<string, string> = {
 
 const DEFAULT_BG = 'linear-gradient(135deg, #1a2a3a 0%, #0f1923 60%, #0a1218 100%)';
 
+// Home page component: loads board data and shows the current board or welcome screen.
 export default function Home() {
   const { currentBoardId, boards, fetchBoards, fetchLabels, loading } = useBoardStore();
 
@@ -27,10 +29,12 @@ export default function Home() {
     fetchLabels();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Find the board object that is currently selected.
   const currentBoard = Array.isArray(boards)
     ? boards.find((b) => b.id === currentBoardId)
     : undefined;
 
+  // Choose a background gradient for the selected board or fallback to a default.
   const bg = currentBoard?.background
     ? (GRADIENT_MAP[currentBoard.background] ?? `linear-gradient(135deg, ${currentBoard.background}cc 0%, ${currentBoard.background}88 100%)`)
     : DEFAULT_BG;

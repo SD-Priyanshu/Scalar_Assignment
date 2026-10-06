@@ -27,7 +27,7 @@ export default function BoardDock() {
   return (
     /* Fixed bottom centre — same position as Trello's bottom dock */
     <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-[calc(100vw-1rem)] max-w-[420px]"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-[min(92vw,380px)]"
       style={{ zIndex: 900 }}
     >
       {/* Board switcher panel — slides up from the dock */}
@@ -85,11 +85,11 @@ export default function BoardDock() {
 
       {/* The dock pill itself */}
       <div
-        className="flex items-center rounded-2xl shadow-2xl overflow-hidden w-full max-w-full"
+        className="flex items-center rounded-xl shadow-xl overflow-hidden w-full max-w-full h-11"
         style={{
-          backgroundColor: 'rgba(24,28,32,0.95)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(16px)',
+          backgroundColor: 'rgba(24,28,32,0.92)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(12px)',
         }}
       >
         {/* Inbox tab */}
@@ -112,13 +112,13 @@ export default function BoardDock() {
         {/* Switch boards */}
         <button
           onClick={() => setShowSwitcher((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-lg ${
             showSwitcher
-              ? 'text-[#579dff]'
-              : 'text-gray-400 hover:text-white'
+              ? 'text-[#579dff] bg-white/5'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
           }`}
         >
-          <ArrowLeftRight size={16} />
+          <ArrowLeftRight size={15} />
           <span className="hidden sm:inline">Switch boards</span>
           <span className="sm:hidden">Boards</span>
           {showSwitcher && <ChevronUp size={12} className="ml-0.5" />}
@@ -139,16 +139,16 @@ interface DockTabProps {
 function DockTab({ icon, label, active, activeLabel }: DockTabProps) {
   return (
     <div
-      className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium select-none ${
+      className={`relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium select-none transition-colors ${
         active ? 'text-[#579dff]' : 'text-gray-400'
       }`}
     >
       {icon}
-      <span>{active && activeLabel ? activeLabel : label}</span>
+      <span className="truncate max-w-[90px]">{active && activeLabel ? activeLabel : label}</span>
       {/* Active underline indicator */}
       {active && (
         <span
-          className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full"
+          className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
           style={{ backgroundColor: '#579dff' }}
         />
       )}

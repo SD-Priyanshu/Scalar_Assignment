@@ -27,7 +27,7 @@ export default function BoardDock() {
   return (
     /* Fixed bottom centre — same position as Trello's bottom dock */
     <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-[min(92vw,380px)]"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-max max-w-[calc(100vw-16px)]"
       style={{ zIndex: 900 }}
     >
       {/* Board switcher panel — slides up from the dock */}
@@ -85,7 +85,7 @@ export default function BoardDock() {
 
       {/* The dock pill itself */}
       <div
-        className="flex items-center rounded-xl shadow-xl overflow-hidden w-full max-w-full h-11"
+        className="inline-flex items-center rounded-xl shadow-xl h-11 overflow-visible"
         style={{
           backgroundColor: 'rgba(24,28,32,0.92)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -112,15 +112,14 @@ export default function BoardDock() {
         {/* Switch boards */}
         <button
           onClick={() => setShowSwitcher((v) => !v)}
-          className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-lg ${
+          className={`flex shrink-0 items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-lg ${
             showSwitcher
               ? 'text-[#579dff] bg-white/5'
               : 'text-gray-400 hover:text-white hover:bg-white/5'
           }`}
         >
           <ArrowLeftRight size={15} />
-          <span className="hidden sm:inline">Switch boards</span>
-          <span className="sm:hidden">Boards</span>
+          <span className="hidden sm:inline whitespace-nowrap">Switch board</span>
           {showSwitcher && <ChevronUp size={12} className="ml-0.5" />}
         </button>
       </div>
@@ -139,12 +138,12 @@ interface DockTabProps {
 function DockTab({ icon, label, active, activeLabel }: DockTabProps) {
   return (
     <div
-      className={`relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium select-none transition-colors ${
+      className={`relative flex shrink-0 items-center gap-1.5 px-3 py-2 text-sm font-medium select-none transition-colors ${
         active ? 'text-[#579dff]' : 'text-gray-400'
       }`}
     >
       {icon}
-      <span className="truncate max-w-[90px]">{active && activeLabel ? activeLabel : label}</span>
+      <span className="hidden sm:inline whitespace-nowrap">{active && activeLabel ? activeLabel : label}</span>
       {/* Active underline indicator */}
       {active && (
         <span

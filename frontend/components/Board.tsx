@@ -262,7 +262,7 @@ export default function Board({ board }: BoardProps) {
           </div>
         )}
 
-        <div className="flex gap-3 overflow-x-auto p-4 pb-6 board-scroll items-start flex-1">
+        <div className="flex gap-3 overflow-x-auto p-4 pb-6 board-scroll items-start flex-1 w-full min-h-0">
           <SortableContext
             items={board.lists.map((l) => l.id)}
             strategy={horizontalListSortingStrategy}
@@ -275,7 +275,7 @@ export default function Board({ board }: BoardProps) {
           {/* Add list */}
           {showAddList ? (
             <div
-              className="rounded-xl p-2 min-w-[272px] max-w-[272px] flex-shrink-0"
+              className="rounded-xl p-2 w-[86vw] min-w-[240px] max-w-[272px] flex-shrink-0 sm:min-w-[272px] sm:max-w-[272px]"
               style={{ backgroundColor: 'rgba(22,27,34,0.92)' }}
             >
               <input
@@ -309,7 +309,7 @@ export default function Board({ board }: BoardProps) {
           ) : (
             <button
               onClick={() => setShowAddList(true)}
-              className="min-w-[272px] max-w-[272px] flex-shrink-0 flex items-center gap-2 text-white/80 hover:text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors h-fit"
+              className="w-[86vw] min-w-[240px] max-w-[272px] flex-shrink-0 flex items-center gap-2 text-white/80 hover:text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors h-fit sm:min-w-[272px] sm:max-w-[272px]"
               style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
             >
               <Plus size={18} />

@@ -59,11 +59,11 @@ export default function Home() {
         {currentBoard ? (
           <Board board={currentBoard} />
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center px-6">
             <div className="text-center text-white">
-              <div className="text-6xl mb-5 select-none">📋</div>
-              <h2 className="text-2xl font-bold mb-2 text-white/90">Welcome to Trello Clone</h2>
-              <p className="text-white/50">Create a board using the button above to get started.</p>
+              <div className="text-5xl sm:text-6xl mb-5 select-none">📋</div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white/90">Welcome to Trello Clone</h2>
+              <p className="text-sm sm:text-base text-white/50">Create a board using the button above to get started.</p>
             </div>
           </div>
         )}

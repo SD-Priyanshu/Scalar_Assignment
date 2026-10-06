@@ -65,7 +65,7 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
   const {
     updateCard, deleteCard,
     addChecklistItem, updateChecklistItem, deleteChecklistItem,
-    addLabelToCard, removeLabelFromCard,
+    addLabelToCard, removeLabelFromCard, deleteLabel,
     addMemberToCard, removeMemberFromCard,
     createLabel, availableLabels,
     addComment, addAttachment, removeAttachment,
@@ -382,12 +382,13 @@ export default function CardModal({ card, listId, isOpen, onClose }: CardModalPr
                           )}
                           {/* Delete button on hover */}
                           <button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              if (has) removeLabelFromCard(card.id, label.id);
+                              if (has) await removeLabelFromCard(card.id, label.id);
+                              await deleteLabel(label.id);
                             }}
                             className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-[#f87168] w-5 h-5 rounded-full flex items-center justify-center"
-                            title="Remove from card"
+                            title="Delete label"
                           >
                             <X size={10} className="text-white" />
                           </button>

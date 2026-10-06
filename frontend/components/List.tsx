@@ -72,7 +72,7 @@ export default function List({ list, boardId }: ListProps) {
         backgroundColor: 'rgba(22,27,34,0.92)',
         backdropFilter: 'blur(6px)',
       }}
-      className={`flex flex-col rounded-xl min-w-[272px] max-w-[272px] flex-shrink-0 max-h-[calc(100vh-130px)] shadow-xl ${isDragging ? 'opacity-0' : ''}`}
+      className={`flex flex-col rounded-xl w-[86vw] min-w-[240px] max-w-[272px] sm:min-w-[272px] sm:max-w-[272px] flex-shrink-0 max-h-[calc(100vh-170px)] sm:max-h-[calc(100vh-130px)] shadow-xl ${isDragging ? 'opacity-0' : ''}`}
     >
       {/* Header */}
       <div

@@ -27,14 +27,14 @@ export default function BoardDock() {
   return (
     /* Fixed bottom centre — same position as Trello's bottom dock */
     <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-[calc(100vw-1rem)] max-w-[420px]"
       style={{ zIndex: 900 }}
     >
       {/* Board switcher panel — slides up from the dock */}
       {showSwitcher && (
         <div
           ref={switcherRef}
-          className="rounded-2xl shadow-2xl overflow-hidden"
+          className="rounded-2xl shadow-2xl overflow-hidden w-full"
           style={{
             backgroundColor: 'rgba(30,35,40,0.97)',
             border: '1px solid rgba(255,255,255,0.12)',
@@ -85,7 +85,7 @@ export default function BoardDock() {
 
       {/* The dock pill itself */}
       <div
-        className="flex items-center rounded-2xl shadow-2xl overflow-hidden"
+        className="flex items-center rounded-2xl shadow-2xl overflow-hidden w-full max-w-full"
         style={{
           backgroundColor: 'rgba(24,28,32,0.95)',
           border: '1px solid rgba(255,255,255,0.1)',
@@ -112,14 +112,15 @@ export default function BoardDock() {
         {/* Switch boards */}
         <button
           onClick={() => setShowSwitcher((v) => !v)}
-          className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
             showSwitcher
               ? 'text-[#579dff]'
               : 'text-gray-400 hover:text-white'
           }`}
         >
           <ArrowLeftRight size={16} />
-          <span>Switch boards</span>
+          <span className="hidden sm:inline">Switch boards</span>
+          <span className="sm:hidden">Boards</span>
           {showSwitcher && <ChevronUp size={12} className="ml-0.5" />}
         </button>
       </div>

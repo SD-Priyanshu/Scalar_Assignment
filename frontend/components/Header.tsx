@@ -162,7 +162,7 @@ export default function Header({ currentBoard }: HeaderProps) {
 
       {/* ── Top nav ── */}
       <header
-        className="flex items-center px-4 h-12 gap-3"
+        className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4 sm:gap-3 sm:h-12 sm:flex-nowrap"
         style={{ backgroundColor: 'rgba(0,0,0,0.38)', backdropFilter: 'blur(6px)' }}
       >
         {/* Logo */}
@@ -172,7 +172,7 @@ export default function Header({ currentBoard }: HeaderProps) {
         </div>
 
         {/* Centered search */}
-        <div className="flex-1 flex justify-center px-4">
+        <div className="order-3 w-full sm:order-none sm:flex-1 sm:w-auto flex justify-center px-0 sm:px-4">
           <div className="relative w-full max-w-xl">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none" />
             <input
@@ -194,7 +194,7 @@ export default function Header({ currentBoard }: HeaderProps) {
         <button
           ref={createBtnRef}
           onClick={handleToggleCreate}
-          className="flex items-center gap-1.5 bg-[#579dff] hover:bg-[#85b8ff] text-[#1d2125] px-4 h-8 rounded-lg text-sm font-semibold transition-colors flex-shrink-0"
+          className="ml-auto flex items-center gap-1.5 bg-[#579dff] hover:bg-[#85b8ff] text-[#1d2125] px-4 h-8 rounded-lg text-sm font-semibold transition-colors flex-shrink-0 sm:ml-0"
         >
           <Plus size={15} />
           Create
@@ -205,11 +205,11 @@ export default function Header({ currentBoard }: HeaderProps) {
       {/* ── Board sub-header ── */}
       {currentBoard && (
         <div
-          className="flex items-center gap-3 px-4 h-10"
+          className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4 sm:gap-3 sm:h-10 sm:flex-nowrap"
           style={{ backgroundColor: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(4px)' }}
         >
           <span className="font-bold text-white text-sm select-none">{currentBoard.title}</span>
-          <div className="w-px h-4 bg-white/25" />
+          <div className="hidden sm:block w-px h-4 bg-white/25" />
 
           {/* Background swatches */}
           <div className="flex items-center gap-1">
